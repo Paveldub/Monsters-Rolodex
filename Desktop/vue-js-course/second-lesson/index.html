@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        .button {
+            margin-left: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <h1>Users list</h1>
+        <h2>{{ totalUsersCount }}</h2>
+        <users-list v-bind:users="list"></users-list>
+
+        <hr>
+
+        <template id="table">
+            <ul>
+                <li v-for="item in users">{{ item.id }} - {{ item.name }} - {{ item.username }} - {{ item.email }}
+                    <button type="button" v-on:click="removeUser(item.id)" class=" button">Remove User</button>
+                </li>
+            </ul>
+        </template>
+    </div>
+
+    <script>
+        let UsersList = ({
+            template: '#table',
+            props: {
+                users: {
+                    type: Array,
+                    required: true
+                }
+            },
+            methods: {
+                removeUser: function (id) {
+                    this.$emit('remove-user', id)
+                }
+            },
+            computed: {
+                totalUsersCount: function () {
+                    return this.users.length
+                }
+            }
+        });
+
+        let vm = new Vue({
+            el: '#app',
+            components: {
+                'users-list': UsersList
+            },
+            data: function () {
+                return {
+                    list: []
+                }
+            },
+            created: function () {
+                this.loadData()
+            },
+            methods: {
+                removeUser: function (id) {
+                    this.list = this.list.filter(function (item) {
+                        return item.id != id;
+                    })
+                },
+                loadData: function () {
+                    let self = this;
+
+                    axios.get('https://jsonplaceholder.typicode.com/users')
+                        .then(function (response) {
+                            self.list = response.data;
+                        })
+                }
+            },
+            watch: {
+                loadData: function () {
+                    console.log('All users was successfully loaded', this.loadData)
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>
